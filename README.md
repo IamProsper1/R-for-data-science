@@ -1,5 +1,8 @@
 # R Course Assignments
 
+**Student:** Ayinebyona Prosper  
+**Student ID:** 20252MBI001
+
 This repository contains my assignments for the R for Data Science course. Each assignment is written in R Markdown (`.Rmd`) and knitted to a Markdown file (`.md`) that shows the code and its results.
 
 ## Assignments
