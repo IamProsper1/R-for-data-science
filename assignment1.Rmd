@@ -1,0 +1,115 @@
+---
+title: "Assignment 1: Importing Data in R"
+author: "Prosper Ayinebyona"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this assignment I import data from three sources:
+
+1. A CSV file
+2. A statistical package (SPSS, Stata and SAS files)
+3. A database management system (MySQL)
+4. A built-in R dataset
+5. A web API
+
+For each dataset I display the first 5 rows.
+
+Packages used: `haven`, `DBI`, `RMySQL` and `jsonlite`.
+
+```{r, eval=FALSE}
+# installing libraries
+# install.packages("haven")
+# install.packages("DBI")
+# install.packages("RMySQL")
+# install.packages("jsonlite")
+```
+
+## 1. Importing a CSV file
+
+The file `sample.csv` is in the same folder as this R Markdown file, so I only need the file name.
+
+```{r}
+csv_data <- read.csv("sample.csv")
+head(csv_data, 5)
+```
+
+## 2. Importing data from a statistical package
+
+I used the `haven` package that reads files from SPSS, Stata and SAS.
+I used the example files that come with the package.
+
+### SPSS file (.sav)
+
+```{r}
+library(haven)
+
+spss_data <- read_sav(system.file("examples", "iris.sav", package = "haven"))
+head(spss_data, 5)
+```
+
+### Stata file (.dta)
+
+```{r}
+stata_data <- read_dta(system.file("examples", "iris.dta", package = "haven"))
+head(stata_data, 5)
+```
+
+### SAS file (.sas7bdat)
+
+```{r}
+sas_data <- read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
+head(sas_data, 5)
+```
+
+## 3. Importing data from a database (MySQL)
+
+I connect to the `NewLifeHospital` database on my computer and read the `Patients` table.
+
+```{r}
+library(DBI)
+library(RMySQL)
+
+# The password is saved in my .Renviron file, not in this file
+con <- dbConnect(MySQL(), dbname = "NewLifeHospital", host = "localhost",
+                 user = "root", password = Sys.getenv("MYSQL_PASSWORD"))
+
+patients <- dbReadTable(con, "Patients")
+head(patients, 5)
+```
+
+Close the connection when finished:
+
+```{r}
+dbDisconnect(con)
+```
+## 4. Importing data from a built-in library
+
+R comes with the `datasets` package, which has ready-made datasets. I load the `mtcars` dataset.
+
+```{r}
+data("mtcars")
+head(mtcars, 5)
+```
+
+## 5. Importing data from an API
+
+a `jsonlite` package reads JSON data from a web API. I use JSONPlaceholder, a free practice API that needs no account or key.
+
+```{r}
+library(jsonlite)
+
+todos <- fromJSON("https://jsonplaceholder.typicode.com/todos")
+head(todos, 5)
+```
+
+
+## Conclusion
+
+I imported a CSV file using `read.csv()`, data from SPSS, Stata and SAS files using the `haven` package, and data from a MySQL database using `DBI` and `RMySQL`. The first 5 rows of each dataset were displayed with `head()`. I also loaded the built-in `mtcars` dataset using `data()`. I also imported data from a web API using `fromJSON()` from the `jsonlite` package.

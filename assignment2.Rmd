@@ -1,0 +1,424 @@
+---
+title: "Assignment 2: Practicing the R codes the lecturer had shared"
+author: "Ayinebyona Prosper"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this assignment I practice the R codes from class: vectors, matrices, lists, factors, missing values, data frames, importing data, summary statistics, graphs, linear models, data management, dates and subsetting.
+
+## 1. R as a calculator
+
+```{r}
+5 + 3
+20 / 4
+2^5
+sqrt(81)
+```
+
+## 2. Vectors
+
+### Numeric
+
+```{r}
+x <- c(0.5, 0.6)
+age <- c(20, 35, 32, 29)
+summary(age)
+mean(age)
+```
+
+### Logical
+
+```{r}
+x <- c(TRUE, FALSE)
+x <- c(T, F)
+x
+```
+
+### Character
+
+```{r}
+x <- c("a", "b", "c")
+class <- c("M", "F", "F", "M")
+class
+```
+
+### Integer
+
+```{r}
+x <- 9:29
+x
+```
+
+### Complex
+
+```{r}
+x <- c(1 + 0i, 2 + 4i)
+x
+```
+
+## 3. Matrix
+
+```{r}
+(x <- matrix(1:6, nrow = 2, ncol = 3))
+(y <- matrix(1:6, nrow = 3, ncol = 2))
+
+# matrix multiplication
+x %*% y
+```
+
+## 4. List
+
+A list can keep different types of data together.
+
+```{r}
+(x <- list(1, "a", TRUE, 1 + 4i))
+```
+
+## 5. Factor
+
+```{r}
+x <- factor(c("yes", "yes", "no", "yes", "no"))
+x
+levels(x)
+```
+
+## 6. Missing values
+
+```{r}
+x <- c(1, 2, NA, 10, 3)
+is.na(x)
+
+# keep only the values that are not missing
+bad <- is.na(x)
+x[!bad]
+```
+
+Keeping only the cases with no missing value in two vectors:
+
+```{r}
+x <- c(1, 2, NA, 4, NA, 5)
+y <- c("a", "b", NA, "d", NA, "f")
+good <- complete.cases(x, y)
+good
+x[good]
+y[good]
+```
+
+## 7. Coercion
+
+If a vector has numbers and logical values, R changes TRUE to 1 and FALSE to 0.
+
+```{r}
+sum(c(TRUE, TRUE, FALSE, FALSE, FALSE))
+```
+
+## 8. Creating a data frame
+
+```{r}
+studentID <- c(1, 2, 3, 4, 5)
+math_score <- c(12, 17, 10, 9, NA)
+gender <- c("M", "F", "M", "M", "F")
+it_score <- c(13, 18, 11, 10, 19)
+
+scoredata <- data.frame(studentID, gender, math_score, it_score)
+scoredata
+```
+
+To open the data in a viewer window (I don't run this when knitting):
+
+```{r, eval=FALSE}
+View(scoredata)
+```
+
+## 9. Creating data from the keyboard
+
+This opens an editor to type the data, so it only works when run by hand.
+
+```{r, eval=FALSE}
+data_class2 <- data.frame(height = numeric(0), weight = numeric(0), bmi = numeric(0))
+data_class2 <- edit(data_class2)
+```
+
+## 10. Importing the class data
+
+The file `class_data.txt` is in the same folder as this R Markdown file.
+
+```{r}
+data_class <- read.table("class_data.txt", header = TRUE)
+
+variable.names(data_class)
+head(data_class)
+tail(data_class)
+data_class[10:20, ]
+summary(data_class$WEIGHT)
+length(data_class$WEIGHT)
+```
+
+## 11. Built-in data
+
+`data()` shows the list of datasets that come with R. Here I use `airquality`.
+
+```{r}
+data("airquality")
+variable.names(airquality)
+str(airquality)
+head(airquality, 5)
+```
+
+## 12. Summary statistics
+
+```{r}
+summary(data_class)
+str(data_class)
+
+# mean and standard deviation of each column
+apply(data_class, 2, mean)
+apply(data_class, 2, sd)
+
+c(Mean = mean(data_class$HEIGHT), SD = sd(data_class$HEIGHT))
+c(Mean = mean(data_class$WEIGHT), SD = sd(data_class$WEIGHT))
+```
+
+## 13. Categorical and continuous variable
+
+I compare petal length between the three species in the `iris` data.
+
+```{r}
+data("iris")
+head(iris)
+
+mean(iris$Petal.Length)
+mean(iris$Petal.Length[iris$Species == "setosa"])
+mean(iris$Petal.Length[iris$Species == "versicolor"])
+mean(iris$Petal.Length[iris$Species == "virginica"])
+
+# shortcut
+by(iris$Petal.Length, iris$Species, mean)
+by(iris$Petal.Length, iris$Species, sd)
+by(iris$Petal.Length, iris$Species, summary)
+```
+
+Box plot:
+
+```{r}
+boxplot(Sepal.Length ~ Species, data = iris,
+        main = "Sepal length by species")
+```
+
+## 14. Two categorical variables
+
+```{r}
+ucba <- data.frame(UCBAdmissions)
+head(ucba)
+
+(cross <- xtabs(Freq ~ Gender + Admit, data = ucba))
+prop.table(cross, 1)
+```
+
+Overall, a smaller proportion of females were admitted.
+
+### Simpson's paradox
+
+When I look at one department only (department F), the result changes and females have a slightly higher admission rate.
+
+```{r}
+cross2 <- xtabs(Freq ~ Gender + Admit, data = ucba[ucba$Dept == "F", ])
+prop.table(cross2, 1)
+```
+
+## 15. Bar charts
+
+```{r}
+dat <- read.table(text = "ProdA ProdB ProdC ProdD
+1 110 50 60 70
+2 120 50 80 65", header = TRUE)
+
+barplot(as.matrix(dat), beside = TRUE, col = c("red", "green"))
+```
+
+```{r}
+dat <- read.table(text = "A B C D E F G
+1 10 80 30 90 70 60 90
+2 20 50 70 50 40 10 40
+3 60 80 80 60 60 30 160
+4 20 40 70 80 20 10 70", header = TRUE)
+
+barplot(as.matrix(dat))
+```
+
+## 16. Scatter plot and correlation
+
+```{r}
+plot(WEIGHT ~ HEIGHT, data = data_class, main = "Weight vs Height")
+cor(data_class$HEIGHT, data_class$WEIGHT)
+```
+
+## 17. Linear model
+
+```{r}
+plot(WEIGHT ~ HEIGHT, data = data_class)
+abline(lm(WEIGHT ~ HEIGHT, data = data_class)$coefficients)
+lines(lowess(data_class$HEIGHT, data_class$WEIGHT), col = "blue")
+```
+
+```{r}
+data_lm <- lm(HEIGHT ~ WEIGHT, data = data_class)
+summary(data_lm)
+```
+
+Diagnostic plots of the model:
+
+```{r}
+par(mfrow = c(2, 2))
+plot(data_lm)
+par(mfrow = c(1, 1))
+```
+
+Histograms:
+
+```{r}
+hist(data_class$HEIGHT)
+hist(data_class$WEIGHT, col = "blue")
+```
+
+## 18. Data management
+
+### Creating a new variable (BMI)
+
+```{r}
+BMI <- round(data_class$WEIGHT / (data_class$HEIGHT / 100)^2, digits = 2)
+
+new_data_class <- cbind(data_class, BMI)
+head(new_data_class, 5)
+tail(new_data_class, 10)
+```
+
+### Summary of BMI
+
+```{r}
+summary(BMI)
+stem(BMI, scale = 2)
+```
+
+## 19. Dates
+
+```{r}
+today <- Sys.Date()
+format(today, format = "%B %d %Y")
+format(today, format = "%A")
+
+# number of days since my date of birth
+dob <- as.Date("2000-05-15")
+difftime(today, dob, units = "days")
+
+startdate <- as.Date("2004-02-13")
+enddate <- as.Date("2011-01-22")
+enddate - startdate
+```
+
+## 20. Leadership data
+
+Five managers answered five questions (1 = strongly disagree to 5 = strongly agree). An age of 99 means the age is missing.
+
+```{r}
+manager <- c(1, 2, 3, 4, 5)
+country <- c("US", "US", "UK", "UK", "UK")
+gender <- c("M", "F", "F", "M", "F")
+age <- c(32, 45, 25, 39, 99)
+q1 <- c(5, 3, 3, 3, 2)
+q2 <- c(4, 5, 5, 3, 2)
+q3 <- c(5, 2, 5, 4, 1)
+q4 <- c(5, 5, 5, NA, 2)
+q5 <- c(5, 5, 2, NA, 1)
+
+leadership <- data.frame(manager, country, gender, age, q1, q2, q3, q4, q5)
+str(leadership)
+names(leadership)
+```
+
+### Missing values and age groups
+
+```{r}
+leadership$age[leadership$age == 99] <- NA
+
+leadership$agecat[leadership$age > 75] <- "Elder"
+leadership$agecat[leadership$age >= 35 & leadership$age <= 75] <- "Middle Aged"
+leadership$agecat[leadership$age < 35] <- "Young"
+
+leadership
+```
+
+### Removing rows with missing values
+
+```{r}
+is.na(leadership[, 5:9])
+
+newdata <- na.omit(leadership)
+newdata
+```
+
+### Sorting
+
+```{r}
+order(leadership$age)
+newdata2 <- leadership[order(leadership$age), ]
+newdata2
+```
+
+### Merging
+
+I made a small salary table and merged it with the leadership data using `manager`.
+
+```{r}
+salary <- data.frame(manager = c(1, 2, 3, 4, 5),
+                     salary = c(5200, 4800, 3900, 4500, 3100))
+
+leadership_salary <- merge(leadership, salary, by = "manager")
+leadership_salary
+```
+
+Adding a new row with `rbind()` (both data frames must have the same variables):
+
+```{r}
+new_manager <- data.frame(manager = 6, country = "US", gender = "M", age = 41,
+                          q1 = 4, q2 = 4, q3 = 3, q4 = 5, q5 = 4,
+                          agecat = "Middle Aged")
+
+leadership2 <- rbind(leadership, new_manager)
+leadership2
+```
+
+### Selecting variables and observations
+
+```{r}
+# selecting the five questions
+myvars <- c("q1", "q2", "q3", "q4", "q5")
+(newdata3 <- leadership[myvars])
+
+# dropping the first five columns
+(newdata4 <- leadership[, -(1:5)])
+
+# one column in different ways
+leadership[[4]]
+leadership$age
+
+# selecting rows 2, 4 and 5
+(newdata6 <- leadership[c(2, 4, 5), ])
+
+# using subset()
+(newdata7 <- subset(leadership, age >= 35 | age < 24, select = c(q1, q2, q3, q4, q5)))
+
+# men older than 30
+leadership[leadership$gender == "M" & leadership$age > 30, ]
+```
+
+## Conclusion
+
+I practiced the basic data structures in R, imported data from a text file and used built-in datasets. I also calculated summary statistics, made graphs, fitted a linear model, created a new variable, worked with dates, and handled missing values, sorting, merging and subsetting.
