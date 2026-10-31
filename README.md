@@ -1,8 +1,5 @@
 # R Course Assignments
 
-**Student:** Your Name  
-**Student ID:** Your Student ID
-
 This repository contains my assignments for the R for Data Science course. Each assignment is written in R Markdown (`.Rmd`) and knitted to a Markdown file (`.md`) that shows the code and its results.
 
 ## Assignments
