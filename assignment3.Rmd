@@ -1,0 +1,167 @@
+---
+title: "Assignment 3: functions and the apply family"
+author: "Ayinebyona Prosper"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this assignment I:
+
+1. Write a function that calculates summary statistics on a variable
+2. Write a function that runs a t-test
+3. Use the apply family of functions: `apply()`, `lapply()`, `sapply()`, `tapply()` and `mapply()`
+
+I use the `Patients` table from my `NewLifeHospital` MySQL database, together with some built-in R datasets.
+
+## Data
+
+I read the `Patients` table from MySQL. The table has no numeric variable to analyse, so I calculate each patient's age in years from `DateOfBirth` using `difftime()`.
+
+```{r}
+library(DBI)
+library(RMySQL)
+
+# The password is saved in my .Renviron file, not in this file
+con <- dbConnect(MySQL(), dbname = "NewLifeHospital", host = "localhost",
+                 user = "root", password = Sys.getenv("MYSQL_PASSWORD"))
+patients <- dbReadTable(con, "Patients")
+dbDisconnect(con)
+
+# age in years from date of birth
+patients$Age <- as.numeric(difftime(Sys.Date(), as.Date(patients$DateOfBirth), units = "days")) / 365.25
+patients$Age <- round(patients$Age, 1)
+
+# number of patients by gender
+table(patients$Gender)
+```
+
+## 1. Function for summary statistics
+
+The function gives the number of observations, the number of missing values, the mean, standard deviation, minimum, median and maximum of a variable. `na.rm = TRUE` makes it work on variables with missing values.
+
+```{r}
+summary_stats <- function(x) {
+  result <- c(n = length(x),
+              missing = sum(is.na(x)),
+              mean = mean(x, na.rm = TRUE),
+              sd = sd(x, na.rm = TRUE),
+              min = min(x, na.rm = TRUE),
+              median = median(x, na.rm = TRUE),
+              max = max(x, na.rm = TRUE))
+  return(round(result, 2))
+}
+```
+
+Summary statistics of the patients' age:
+
+```{r}
+summary_stats(patients$Age)
+```
+
+The mean age of the patients is 33.81, and the youngest one is 23 while the oldest is 51
+
+## 2. Function that runs a t-test
+
+The function runs a t-test on two groups. Then it uses `if` and `else` to say whether the difference between the two means is significant at the 5% level.
+
+```{r}
+run_ttest <- function(x, y) {
+  test <- t.test(x, y)
+  print(test)
+  if (test$p.value < 0.05) {
+    print("The difference between the two means is significant (p < 0.05)")
+  } else {
+    print("The difference between the two means is not significant (p >= 0.05)")
+  }
+}
+```
+
+Comparing the age of male and female patients:
+
+```{r}
+male_age <- patients$Age[patients$Gender == "Male"]
+female_age <- patients$Age[patients$Gender == "Female"]
+
+run_ttest(male_age, female_age)
+```
+
+## 3. Applications of the apply family
+
+### apply()
+
+`apply()` applies a function to the rows (1) or columns (2) of a matrix or table.
+
+```{r}
+m <- matrix(1:12, nrow = 3)
+m
+
+apply(m, 1, sum)   # sum of each row
+apply(m, 2, sum)   # sum of each column
+```
+
+With my function from part 1 on the numeric columns of `iris`:
+
+```{r}
+apply(iris[, 1:4], 2, summary_stats)
+```
+
+On the Titanic table, survival by class:
+
+```{r}
+apply(Titanic, c(1, 4), sum)
+```
+
+### lapply()
+
+`lapply()` applies a function to each element of a list and always returns a list.
+
+```{r}
+ages <- list(male = male_age, female = female_age)
+
+lapply(ages, mean)
+lapply(ages, range)
+```
+
+### sapply()
+
+`sapply()` works like `lapply()` but simplifies the result to a vector when it can.
+
+```{r}
+sapply(ages, mean)
+sapply(patients, class)   # type of each column
+```
+
+With a function written inside, the square of each number:
+
+```{r}
+sapply(1:5, function(x) x^2)
+```
+
+### tapply()
+
+`tapply()` applies a function to a variable separately for each group. It gives the same result as `by()` from assignment 2, but in a shorter form.
+
+```{r}
+tapply(patients$Age, patients$Gender, mean)       # mean age by gender
+tapply(patients$Age, patients$BloodGroup, mean)   # mean age by blood group
+tapply(patients$Age, patients$Gender, summary_stats)
+```
+
+### mapply()
+
+`mapply()` applies a function to two or more vectors at the same time, element by element.
+
+```{r}
+mapply(function(x, y) x + y, 1:5, 6:10)   # 1+6, 2+7, 3+8, ...
+mapply(rep, 1:3, 3:1)                     # repeat 1 three times, 2 twice, 3 once
+```
+
+## Conclusion
+
+I wrote a function that calculates summary statistics on a variable and a function that runs a t-test and says whether the result is significant. I used them on the age of patients from my hospital database. I also used the apply family: `apply()` on rows and columns, `lapply()` and `sapply()` on lists, `tapply()` on groups and `mapply()` on several vectors at once.

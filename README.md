@@ -14,3 +14,9 @@ This repository contains my assignments for the R for Data Science course. Each 
 
 - [Assignment 2: Practicing class notes](assignment2.md)  
   Following the codes from class: vectors, matrices, lists, factors, missing values, data frames, importing data, summary statistics, graphs, linear models, data management, dates and subsetting.
+
+- [Class 2: Control structures](in%20class/class2.md)  
+  Notes from class: if and else, for and while loops, next and break, functions, and apply() on the Titanic table.
+
+- [Assignment 3: Functions and the apply family](assignment3.md)  
+  A function for summary statistics and a function that runs a t-test, used on patients' age from my hospital database, and applications of apply(), lapply(), sapply(), tapply() and mapply().
